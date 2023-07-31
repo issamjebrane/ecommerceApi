@@ -49,9 +49,9 @@ router.post('/register',(req,res)=>{
 
         db.query(query,[results.insertId],(erro,results)=>{
 
-            const payload  = {userId:results[0].id}
-            const accessToken = jwt.sign(payload,process.env.ACCESS_TOKEN_SECRET)
-            res.status(200).json({accessToken:accessToken,results:results[0]});
+            // const payload  = {userId:results[0].id}
+            // const accessToken = jwt.sign(payload,process.env.ACCESS_TOKEN_SECRET)
+            res.status(200).json(results[0]);
         })
       });
 })

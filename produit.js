@@ -1,10 +1,24 @@
 const express = require('express')
 const router = express.Router()
 const db = require('./db')
+const jwt = require("jsonwebtoken")
 
-router.get('/',(req,res)=>{
+function Authentication(req,res,next){
+    const auth = req.headers.authorization
+    const token = auth?.split(' ')[1]
+    if(!token){
+        return res.status(403).json({message:"missing token"});
+    }
+    jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
+        if(err){
+            return res.status(401).json({message:err})
+        }
+    })
+    next();
+}
+
+router.get('/',Authentication,(req,res)=>{
     const query = "SELECT * FROM produit"
-
     db.query(query,(err,result)=>{
         if(err){
             console.error("internal error",err)
@@ -20,14 +34,13 @@ router.get('/',(req,res)=>{
 router.get('/:type',(req,res)=>{
     const type=req.params.type.split(',')
     const placeholders = type.map(() => '?').join(',');
-
     const query = `SELECT * FROM produit WHERE type IN (${placeholders})`
     db.query(query,type,(err,result)=>{
         if(err){
             console.error("internal error",err)
             res.sendStatus(404)
         }
-        if(result.length==0){
+        if(result?.length==0){
             console.error("not data found")
             res.sendStatus(401)
         }
